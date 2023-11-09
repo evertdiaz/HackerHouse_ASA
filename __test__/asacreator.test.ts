@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, beforeEach } from '@jest/globals';
 import { algorandFixture } from '@algorandfoundation/algokit-utils/testing';
+import * as algokit from '@algorandfoundation/algokit-utils';
 import { AsacreatorClient } from '../contracts/clients/AsacreatorClient';
 
 const fixture = algorandFixture();
@@ -25,17 +26,22 @@ describe('Asacreator', () => {
     await appClient.create.createApplication({});
   });
 
-  test('sum', async () => {
-    const a = 13;
-    const b = 37;
-    const sum = await appClient.doMath({ a, b, operation: 'sum' });
-    expect(sum.return?.valueOf()).toBe(BigInt(a + b));
-  });
+  test('create', async () => {
+    const name = 'HH Coin';
+    const unitName = 'HHC';
+    const decimals = 1;
+    const supply = 1000000;
 
-  test('difference', async () => {
-    const a = 13;
-    const b = 37;
-    const diff = await appClient.doMath({ a, b, operation: 'difference' });
-    expect(diff.return?.valueOf()).toBe(BigInt(a >= b ? a - b : b - a));
+    await appClient.appClient.fundAppAccount(algokit.microAlgos(200_000));
+
+    const asset = await appClient.createAsset(
+      { name, decimals, supply, unitName },
+      {
+        sendParams: {
+          fee: algokit.microAlgos(2_000),
+        },
+      }
+    );
+    expect(asset.return?.valueOf()).toBeGreaterThan(BigInt(1000));
   });
 });
